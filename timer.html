@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neumorphic Countdown Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e0e0e0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #e0e0e0;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1),
+                -6px -6px 12px rgba(255, 255, 255, 0.9);
+        }
+
+        .timer {
+            font-size: 48px;
+            color: black;
+            background-color: #e0e0e0;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.1),
+                inset -6px -6px 12px rgba(255, 255, 255, 0.9);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .number-button,
+        .start-stop-button,
+        .reset-button {
+            padding: 8px;
+            margin: 4px;
+            border: none;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1),
+                -3px -3px 6px rgba(255, 255, 255, 0.9);
+        }
+
+        .number-button:active,
+        .start-stop-button:active,
+        .reset-button:active {
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.1),
+                inset -3px -3px 6px rgba(255, 255, 255, 0.9);
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .shake {
+            animation: shake 0.1s;
+            animation-iteration-count: 100;
+        }
+
+        .start-stop-button {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="timer" id="timer">00:00</div>
+        <div class="grid">
+            <button class="number-button" onclick="addDigit(1)">1</button>
+            <button class="number-button" onclick="addDigit(2)">2</button>
+            <button class="number-button" onclick="addDigit(3)">3</button>
+            <button class="number-button" onclick="addDigit(4)">4</button>
+            <button class="number-button" onclick="addDigit(5)">5</button>
+            <button class="number-button" onclick="addDigit(6)">6</button>
+            <button class="number-button" onclick="addDigit(7)">7</button>
+            <button class="number-button" onclick="addDigit(8)">8</button>
+            <button class="number-button" onclick="addDigit(9)">9</button>
+            <button class="start-stop-button" id="startStopButton" onclick="toggleStartStop()">&#9658;</button>
+            <button class="reset-button" onclick="resetTimer()">&#8634;</button>
+            <button class="number-button" onclick="addDigit(0)">0</button>
+        </div>
+    </div>
+    <script>
+        let countdown;
+        let timerDisplay = document.getElementById("timer");
+        let startStopButton = document.getElementById("startStopButton");
+        let isRunning = false;
+        let shakingTimeout;
+
+        const timeQueue = [0, 0, 0, 0];
+
+        function addDigit(digit) {
+            if (!isRunning) {
+                timeQueue.shift();
+                timeQueue.push(digit);
+                updateTimeDisplay();
+            }
+        }
+
+        function updateTimeDisplay() {
+            const minutes = timeQueue[0] * 10 + timeQueue[1];
+            const seconds = timeQueue[2] * 10 + timeQueue[3];
+            timerDisplay.textContent = `${minutes
+                .toString()
+                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+            if (!isRunning) {
+                if (timeQueue[2] >= 6) {
+                    timerDisplay.style.color = "#cc6633";
+                } else {
+                    timerDisplay.style.color = "black";
+                }
+            } else {
+                const totalTime =
+                    timeQueue[0] * 600 + timeQueue[1] * 60 + timeQueue[2] * 10 + timeQueue[3];
+                if (totalTime > 10 && timeQueue[2] >= 6) {
+                    timerDisplay.style.color = "#cc6633";
+                } else if (totalTime > 10) {
+                    timerDisplay.style.color = "black";
+                }
+            }
+        }
+
+        function toggleStartStop() {
+            const totalTime =
+                timeQueue[0] * 600 + timeQueue[1] * 60 + timeQueue[2] * 10 + timeQueue[3];
+            if (totalTime === 0) return;
+
+            if (!isRunning) {
+                startCountdown(totalTime);
+            } else {
+                stopCountdown();
+            }
+        }
+
+        function startCountdown(totalTime) {
+            isRunning = true;
+            startStopButton.innerHTML = "&#9632;";
+            countdown = setInterval(() => {
+                totalTime--;
+
+                if (totalTime <= 10) {
+                    timerDisplay.style.color = "#B22222";
+                }
+
+                if (totalTime <= 0) {
+                    clearInterval(countdown);
+                    shakingTimeout = setTimeout(() => {
+                        timerDisplay.classList.remove("shake");
+                        resetTimer();
+                    }, 10000);
+                    timerDisplay.classList.add("shake");
+                }
+
+                const minutes = Math.floor(totalTime / 60);
+                const seconds = totalTime % 60;
+                timeQueue[0] = Math.floor(minutes / 10);
+                timeQueue[1] = minutes % 10;
+                timeQueue[2] = Math.floor(seconds / 10);
+                timeQueue[3] = seconds % 10;
+                updateTimeDisplay();
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            isRunning = false;
+            startStopButton.innerHTML = "&#9658;";
+            clearInterval(countdown);
+        }
+
+        function resetTimer() {
+            stopCountdown();
+            clearTimeout(shakingTimeout);
+            timerDisplay.classList.remove("shake");
+            timeQueue[0] = 0;
+            timeQueue[1] = 0;
+            timeQueue[2] = 0;
+            timeQueue[3] = 0;
+            timerDisplay.style.color = "black";
+            updateTimeDisplay();
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[[\]]/g, "\\$&");
+            const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+            const results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return "";
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        function setDefaultTimeFromUrl() {
+            const timeParam = getParameterByName("time");
+            if (timeParam && timeParam.length === 4 && !isNaN(timeParam)) {
+                timeQueue[0] = parseInt(timeParam[0], 10);
+                timeQueue[1] = parseInt(timeParam[1], 10);
+                timeQueue[2] = parseInt(timeParam[2], 10);
+                timeQueue[3] = parseInt(timeParam[3], 10);
+                updateTimeDisplay();
+            }
+        }
+
+        setDefaultTimeFromUrl();
+
+    </script>
+</body>
+
+</html>
